@@ -1,8 +1,8 @@
 #include <stdio.h>
-#include<unistd.h>
-#include<sys/shm.h>
-#include<stdlib.h>
-#include<error.h>
+#include <unistd.h>
+#include <sys/shm.h>
+#include <stdlib.h>
+#include <error.h>
 int main(){
     int shm_id;
     int *share;
