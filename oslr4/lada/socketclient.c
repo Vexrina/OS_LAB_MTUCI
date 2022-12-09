@@ -17,7 +17,7 @@ int main(){
     
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = inet_addr("127.0.0.1");
-    address.sin_port = htons(9746);
+    address.sin_port = htons(9736);
     len = sizeof(address);
 
     result = connect(sockfd, (struct sockaddr*)&address, len);
@@ -30,7 +30,7 @@ int main(){
     write(sockfd, &ch, 1);
     
     read(sockfd, &ch, 1);
-    printf("char from server = %c\n, ch");
+    printf("char from server = %c\n", ch);
     close(sockfd);
     exit(0);
 }

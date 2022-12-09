@@ -8,7 +8,7 @@ int main(){
     int *share;
     shm_id = shmget(1234,getpagesize(), IPC_CREAT);
     if(shm_id == -1){
-        perror("shmget()")
+        perror("shmget()");
     }
     share = (int *)shmat(shm_id, 0, 0);
     while(1){

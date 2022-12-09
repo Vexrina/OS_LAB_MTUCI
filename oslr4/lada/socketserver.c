@@ -25,14 +25,14 @@ int main()
 
     listen(server_sockfd,5);
 
-    signal(SIGNHLD, SIG_IGN);
+    signal(SIGCHLD, SIG_IGN);
 
     while(1){
         char ch ='\0';
         client_len = sizeof(client_addr);
         printf("server is waiting\n");
 
-        client_sockfd = accept(server_sockfd, (sturct sockaddr*)&client_addr, &client_len);
+        client_sockfd = accept(server_sockfd, (struct sockaddr*)&client_addr, &client_len);
 
         if(fork()==0){
 
@@ -44,7 +44,7 @@ int main()
             exit(0);
         }
         else{
-            close(client_sockfd)
+            close(client_sockfd);
         }
     }
     return 0;
