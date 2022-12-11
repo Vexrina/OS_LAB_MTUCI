@@ -2,27 +2,35 @@
 #include <stdlib.h>
 
 int main(int argc, char **argv){
+    // определение переменных
     FILE *f;
     char s, *p, buf[150], fileName[80];
     int pid;
+    //перевод второго аргумента в лонг
     long conv = strtol(argv[2], &p, 10);
-
+    //присваивание
     pid = conv;
-
+    // контроль ошибки
     if (argc<3){
         printf("Enter filename and pid");
         return 0;
     }
+    //открытие файла
     f = fopen(argv[1], "rw");
     if(!f){
-        printf("File dont exist. Will be created with that name");
+        //если файла не существует(?), то
+        printf("File dont exist. Will be created with that name\n");
+        //почему-то не может открыть файл(?)
         if(!(f = fopen(argv[1], "w"))){
             printf("Cant open the file\n");
             return 0;
         }
+        //ыыы?
         sprintf(buf, "%s %d %s %s", "pmap", pid, ">>", argv[1]);
+        //ыыы?
         system(buf);
-        printf("Write is ended");
+        //принт в ФАЙЛ завершен, ггвп ретурне 0.
+        printf("Write is ended\n");
         return 0;
     }
     else {
