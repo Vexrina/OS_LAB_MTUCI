@@ -16,6 +16,7 @@ int main(){
    {
         printf("please Enter mtx and order#");
         fflush(stdout);
+
         ssize_t len = read(0,buf,sizeof(buf)-1);
         if (len>0)
         {

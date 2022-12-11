@@ -1,12 +1,12 @@
 import argparse
 
 
-def printMTX(mtx:list[list[float]], text:str, order=3)->None:
+def printMTX(mtx, text, order=3)->None:
     print(text)
     for item in mtx:
         print(item)
 
-def InverseOfMtx(mtx:list[list[float]], order:int)->None:
+def InverseOfMtx(mtx, order)->None:
     
     tmp = 0
 
@@ -63,7 +63,7 @@ def CheckChar(char):
     else: 
         return True
 
-def ParseArguments(mtx:str):
+def ParseArguments(mtx):
     mtx = mtx.replace(',',' ')
     # print(mtx)
     mtx = mtx.replace('[', 's')
