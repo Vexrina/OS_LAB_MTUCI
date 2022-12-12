@@ -11,7 +11,7 @@ def InverseOfMtx(mtx, order)->None:
     tmp = 0
 
     # Принтим матрицу
-    printMTX(mtx, "\tMatrix\t")
+    #printMTX(mtx, "\tMatrix\t")
 
     # Добавляем справа нули
     for i in range(order):
@@ -32,7 +32,7 @@ def InverseOfMtx(mtx, order)->None:
             mtx[i-1] = temp
     
     # Принтим матрицу которая получилась
-    printMTX(mtx, "\tAugmented Matrix\t", order=order*2)
+    #printMTX(mtx, "\tAugmented Matrix\t", order=order*2)
 
 
     # Меняем строку на сумму самой себя и константы кратной другой строке матрицы
@@ -59,7 +59,7 @@ def InverseOfMtx(mtx, order)->None:
         for j in range(order):
             mtx[i][j]=round(mtx[i][j],5)
     # Принтим ответ
-    printMTX(mtx, "\tInverse Matrix\t", order=order)
+    return mtx
 
 def CheckChar(char):
     if char=='s' or char == 'e' or char==' ':
@@ -69,14 +69,11 @@ def CheckChar(char):
 
 def ParseArguments(mtx):
     mtx = mtx.replace(',',' ')
-    # print(mtx)
     mtx = mtx.replace('[', 's')
     mtx = mtx.replace(']', 'e')
-    # print(mtx)
     ar = []
     newMtx = []
     i = 0
-    # print(len(mtx))
     while(i!=len(mtx)):
         if mtx[i]=='s':
             i+=1
@@ -88,7 +85,6 @@ def ParseArguments(mtx):
             i+=1
         else:
             tmp = mtx[i]
-            # print(i)
             while(CheckChar(mtx[i+1])):
                 i+=1
                 tmp+=mtx[i]
@@ -97,14 +93,3 @@ def ParseArguments(mtx):
 
     newMtx.pop()
     return newMtx
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('mtx')
-    parser.add_argument('order')
-    args = parser.parse_args()
-    mtx = args.mtx
-    mtx = ParseArguments(mtx)
-    order = args.order
-    order = int(order)
-    InverseOfMtx(mtx, order)
