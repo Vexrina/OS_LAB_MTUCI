@@ -11,7 +11,6 @@ int main(){
     int len = 0;
     struct sockaddr_in address;
     int result;
-    char ch = 'A';
 
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     
@@ -28,7 +27,6 @@ int main(){
     }
 
     write(sockfd, &ch, 1);
-    
     read(sockfd, &ch, 1);
     printf("char from server = %c\n", ch);
     close(sockfd);
