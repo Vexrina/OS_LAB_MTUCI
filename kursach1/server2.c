@@ -13,6 +13,8 @@
 #include <errno.h>
 #include <sys/resource.h>
 #include <sys/syscall.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #define PORT 5555
 
@@ -58,6 +60,21 @@ int main()
     {
         printf("[-]Error in binding.\n");
     }
+
+     // Additinal quest
+    int fd = open("myfifo",O_WRONLY);
+    if(fd<0){
+        perror("open");
+        return 1;
+    }
+
+    struct Logs {
+        char ans[1024];
+        int server;
+    };
+    struct Logs forLog;
+    forLog.server = 2;
+
     while (1)
     {
         newSocket = accept(sockfd, (struct sockaddr *)&newAddr, &addr_size);
@@ -65,7 +82,17 @@ int main()
         {
             exit(1);
         }
-        printf("Connection accepted from %s:%d\n", inet_ntoa(newAddr.sin_addr), ntohs(newAddr.sin_port));
+        
+        char connection [64] = "Connection accepted from ";
+        strcat(connection, inet_ntoa(newAddr.sin_addr));
+        strcat(connection, ":");
+        sprintf(&connection[strlen(connection)],"%d\n",ntohs(newAddr.sin_port));
+        printf("%s", connection);
+
+
+        memcpy(forLog.ans, connection, strlen(connection));
+        write(fd, &forLog, sizeof(struct Logs));
+	    bzero(forLog.ans, sizeof(forLog.ans));
 
         if ((childpid = fork()) == 0)
         {
@@ -76,7 +103,14 @@ int main()
                 recv(newSocket, buffer, 1024, 0);
                 if (strcmp(buffer, ":exit") == 0)
                 {
-                    printf("Disconnected from %s:%d\n", inet_ntoa(newAddr.sin_addr), ntohs(newAddr.sin_port));
+                    char disconnect [64] = "Disconnected from ";
+                    strcat(disconnect, inet_ntoa(newAddr.sin_addr));
+                    strcat(disconnect, ":");
+                    sprintf(&disconnect[strlen(disconnect)],"%d\n",ntohs(newAddr.sin_port));
+                    printf("%s", disconnect);                 
+                    memcpy(forLog.ans, disconnect, strlen(disconnect));
+                    write(fd, &forLog, sizeof(struct Logs));
+                    bzero(forLog.ans, sizeof(forLog.ans));
                     break;
                 }
                 else
@@ -90,15 +124,19 @@ int main()
                         printf("oops, smth went wrong");
                     }
                     char ans[1024] = {0};
-                    snprintf(ans, 1024, "PID is %d, TID is %d, his priority is %d\n",
+                    snprintf(ans, 1024, "PID is %d, TID is %d, his priority is %d",
                              pid, tid, prio);
-                    printf("%s", ans);
-
+                    
                     sleep(1);
                     printf("Client: %s\n", buffer);
                     send(newSocket, ans, strlen(ans), 0);
+                    printf("%s", ans);
+                    memcpy(forLog.ans, ans, strlen(ans));
+                    write(fd, &forLog, sizeof(struct Logs));
+                    bzero(forLog.ans, sizeof(forLog.ans));
                     bzero(ans, sizeof(ans));
                 }
+                bzero(buffer, sizeof(buffer));
             }
         }
     }
