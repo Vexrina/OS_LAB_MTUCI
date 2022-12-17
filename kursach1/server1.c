@@ -1,20 +1,23 @@
 // Текущее положение курсора - комплете
 // Дескриптор раскладки клавиатуры по умолчанию. - комплете
-// Сервер из этого говна
+#include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
 #include <string.h>
+
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #define PORT 4444
 
 void Cursor(char *s);
 void KeyboardLayouts(char *s);
+
 int main()
 {
     int sockfd, ret;
@@ -57,6 +60,23 @@ int main()
     {
         printf("[-]Error in binding.\n");
     }
+
+    // Additinal quest
+    int fd = open("myfifo", O_WRONLY);
+    if (fd < 0)
+    {
+        perror("open");
+        return 1;
+    }
+
+    struct Logs {
+        char ans[1024];
+        int server;
+    };
+    struct Logs forLog;
+    forLog.server = 1;
+
+    
     while (1)
     {
         newSocket = accept(sockfd, (struct sockaddr *)&newAddr, &addr_size);
@@ -64,7 +84,17 @@ int main()
         {
             exit(1);
         }
-        printf("Connection accepted from %s:%d\n", inet_ntoa(newAddr.sin_addr), ntohs(newAddr.sin_port));
+        char connection [64] = "Connection accepted from ";
+        strcat(connection, inet_ntoa(newAddr.sin_addr));
+        strcat(connection, ":");
+        sprintf(&connection[strlen(connection)],"%d\n",ntohs(newAddr.sin_port));
+        printf("%s", connection);
+
+
+        memcpy(forLog.ans, connection, strlen(connection));
+        write(fd, &forLog, sizeof(struct Logs));
+	    bzero(forLog.ans, sizeof(forLog.ans));
+
 
         if ((childpid = fork()) == 0)
         {
@@ -74,8 +104,15 @@ int main()
             {
                 recv(newSocket, buffer, 1024, 0);
                 if (strcmp(buffer, ":exit") == 0)
-                {
-                    printf("Disconnected from %s:%d\n", inet_ntoa(newAddr.sin_addr), ntohs(newAddr.sin_port));
+                {   
+                    char disconnect [64] = "Disconnected from ";
+                    strcat(disconnect, inet_ntoa(newAddr.sin_addr));
+                    strcat(disconnect, ":");
+                    sprintf(&disconnect[strlen(disconnect)],"%d\n",ntohs(newAddr.sin_port));
+                    printf("%s", disconnect);                 
+                    memcpy(forLog.ans, disconnect, strlen(disconnect));
+                    write(fd, &forLog, sizeof(struct Logs));
+                    bzero(forLog.ans, sizeof(forLog.ans));
                     break;
                 }
                 else
@@ -84,19 +121,20 @@ int main()
                     char keyboardlayout[5];
                     KeyboardLayout(keyboardlayout);
                     Cursor(cursor);
-                    //printf("%s\n", cursor);
-                    //printf("%s\n", keyboardlayout);
-                    char ans[30] = {0};
+                    char ans[20] = {0};
                     strcat(ans, cursor);
                     strcat(ans, "___");
                     strcat(ans, keyboardlayout);
                     sleep(1);
                     printf("Client: %s\n", buffer);
-	  	    //printf(*ans);
-		    //printf(strlen(ans));
                     send(newSocket, ans, strlen(ans), 0);
+                    printf("%s\n", ans);
+                    memcpy(forLog.ans, ans, strlen(ans));
+                    write(fd, &forLog, sizeof(struct Logs));
+                    bzero(forLog.ans, sizeof(forLog.ans));
                     bzero(ans, sizeof(ans));
                 }
+                bzero(buffer, sizeof(buffer));
             }
         }
     }
@@ -121,8 +159,7 @@ void Cursor(char *s)
     system("rm a.txt");
     char newstring[20];
     int i;
-    for (i = 0; (newstring[i] = string[i]) != 's'; i++)
-        ;
+    for (i = 0; (newstring[i] = string[i]) != 's'; i++);
     newstring[i] = '\0';
     newstring[i - 1] = '\0';
     strcpy(s, newstring);
