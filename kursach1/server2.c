@@ -61,15 +61,20 @@ int main()
         printf("[-]Error in binding.\n");
     }
 
-     // Additinal quest
-    int fd = open("myfifo",O_WRONLY);
-    if(fd<0){
+    // Additinal quest
+    int fd = open("myfifo", O_WRONLY);
+    if (fd < 0)
+    {
         perror("open");
         return 1;
     }
 
-    struct Logs {
-        char ans[1024];
+    struct Logs
+    {
+        char ans1[32];
+        char ans2[512];
+        char log[1024];
+        char client[1024];
         int server;
     };
     struct Logs forLog;
@@ -82,17 +87,16 @@ int main()
         {
             exit(1);
         }
-        
-        char connection [64] = "Connection accepted from ";
+
+        char connection[64] = "Connection accepted from ";
         strcat(connection, inet_ntoa(newAddr.sin_addr));
         strcat(connection, ":");
-        sprintf(&connection[strlen(connection)],"%d\n",ntohs(newAddr.sin_port));
+        sprintf(&connection[strlen(connection)], "%d\n", ntohs(newAddr.sin_port));
         printf("%s", connection);
 
-
-        memcpy(forLog.ans, connection, strlen(connection));
+        memcpy(forLog.log, connection, strlen(connection));
         write(fd, &forLog, sizeof(struct Logs));
-	    bzero(forLog.ans, sizeof(forLog.ans));
+        bzero(forLog.log, sizeof(forLog.log));
 
         if ((childpid = fork()) == 0)
         {
@@ -101,17 +105,22 @@ int main()
             while (1)
             {
                 recv(newSocket, buffer, 1024, 0);
+                memcpy(forLog.client, buffer, 1024);
                 if (strcmp(buffer, ":exit") == 0)
                 {
-                    char disconnect [64] = "Disconnected from ";
+                    char disconnect[64] = "Disconnected from ";
                     strcat(disconnect, inet_ntoa(newAddr.sin_addr));
                     strcat(disconnect, ":");
-                    sprintf(&disconnect[strlen(disconnect)],"%d\n",ntohs(newAddr.sin_port));
-                    printf("%s", disconnect);                 
-                    memcpy(forLog.ans, disconnect, strlen(disconnect));
+                    sprintf(&disconnect[strlen(disconnect)], "%d\n", ntohs(newAddr.sin_port));
+                    printf("%s", disconnect);
+                    memcpy(forLog.log, disconnect, strlen(disconnect));
                     write(fd, &forLog, sizeof(struct Logs));
-                    bzero(forLog.ans, sizeof(forLog.ans));
+                    bzero(forLog.log, sizeof(forLog.log));
                     break;
+                }
+                else if (strcmp(buffer, ">choice") == 0)
+                {
+                    printf("client switch servers\n");
                 }
                 else
                 {
@@ -123,18 +132,20 @@ int main()
                     {
                         printf("oops, smth went wrong");
                     }
-                    char ans[1024] = {0};
-                    snprintf(ans, 1024, "PID is %d, TID is %d, his priority is %d",
-                             pid, tid, prio);
-                    
+                    char ans1[32] = {0};
+                    snprintf(ans1, 32, "PID is %d", pid);
+                    char ans2[512] = {0};
+                    snprintf(ans2, 512, "TID is %d, his priority is %d", tid, prio);
+
                     sleep(1);
+                    memcpy(forLog.ans1, ans1, strlen(ans1));
+                    memcpy(forLog.ans2, ans2, strlen(ans2));
                     printf("Client: %s\n", buffer);
-                    send(newSocket, ans, strlen(ans), 0);
-                    printf("%s", ans);
-                    memcpy(forLog.ans, ans, strlen(ans));
+                    send(newSocket, &forLog, sizeof(struct Logs), 0);
+                    // printf("%s", ans);
                     write(fd, &forLog, sizeof(struct Logs));
-                    bzero(forLog.ans, sizeof(forLog.ans));
-                    bzero(ans, sizeof(ans));
+                    bzero(forLog.ans1, sizeof(forLog.ans1));
+                    bzero(forLog.ans2, sizeof(forLog.ans2));
                 }
                 bzero(buffer, sizeof(buffer));
             }

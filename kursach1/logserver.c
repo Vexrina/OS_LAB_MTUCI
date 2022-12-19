@@ -22,16 +22,22 @@ int main()
         return 0;
     }
     int lines_count1 = 0;
-       	for (char c = getc(file1); c != EOF; c = getc(file1)){
-       		if (c == '\n') {// Increment count if this character is newline
-       		     lines_count1= lines_count1+1;
-}}
+    for (char c = getc(file1); c != EOF; c = getc(file1))
+    {
+        if (c == '\n')
+        { // Increment count if this character is newline
+            lines_count1 = lines_count1 + 1;
+        }
+    }
 
     int lines_count2 = 0;
-       	for (char c = getc(file2); c != EOF; c = getc(file2)){
-       		if (c == '\n') {// Increment count if this character is newline
-       		     lines_count2=lines_count2+1;
-}}
+    for (char c = getc(file2); c != EOF; c = getc(file2))
+    {
+        if (c == '\n')
+        { // Increment count if this character is newline
+            lines_count2 = lines_count2 + 1;
+        }
+    }
 
     umask(0);
     int ret = mkfifo("myfifo", 0666);
@@ -45,7 +51,10 @@ int main()
 
     struct Logs
     {
-        char ans[1024];
+        char ans1[32];
+        char ans2[512];
+        char log[1024];
+        char client[1024];
         int server;
     };
     struct Logs forLog;
@@ -54,17 +63,33 @@ int main()
         int len = read(fd, &forLog, sizeof(struct Logs));
         if (forLog.server == 1)
         {
-            printf("Log1 %s\n", forLog.ans);
-	    fprintf(file1, "Log #%d: %s", lines_count1, forLog.ans);
-	    lines_count1++;
-           // fprintf(file1, , lines_count1, forLog.ans);
-
+            if (strlen(forLog.ans1) == 0)
+            {
+                printf("Log1 %s\n", forLog.log);
+                fprintf(file1, "Log #%d: %s", lines_count1, forLog.log);
+                lines_count1++;
+            }
+            printf("Log1 %s\n", forLog.ans1);
+            printf("Log1 %s\n", forLog.ans2);
+            fprintf(file1, "Log #%d: %s\n", lines_count1, forLog.ans1);
+            lines_count1++;
+            fprintf(file1, "Log #%d: %s\n", lines_count1, forLog.ans2);
+            lines_count1++;
         }
         if (forLog.server == 2)
         {
-            printf("Log2 %s\n", forLog.ans);
-            fprintf(file2, "Log #%d: %s", lines_count2, forLog.ans);
-	    lines_count2++;
+            if (strlen(forLog.ans1) == 0)
+            {
+                printf("Log2 %s\n", forLog.log);
+                fprintf(file2, "Log #%d: %s", lines_count2, forLog.log);
+                lines_count2++;
+            }
+            printf("Log2 %s\n", forLog.ans1);
+            printf("Log2 %s\n", forLog.ans2);
+            fprintf(file2, "Log #%d: %s\n", lines_count2, forLog.ans1);
+            lines_count2++;
+            fprintf(file2, "Log #%d: %s\n", lines_count2, forLog.ans2);
+            lines_count2++;
         }
 
         if (len > 0)

@@ -69,14 +69,18 @@ int main()
         return 1;
     }
 
-    struct Logs {
-        char ans[1024];
+    struct Logs
+    {
+        char ans1[32];
+        char ans2[512];
+        char log[1024];
+        char client[1024];
         int server;
     };
+
     struct Logs forLog;
     forLog.server = 1;
 
-    
     while (1)
     {
         newSocket = accept(sockfd, (struct sockaddr *)&newAddr, &addr_size);
@@ -84,17 +88,15 @@ int main()
         {
             exit(1);
         }
-        char connection [64] = "Connection accepted from ";
+        char connection[64] = "Connection accepted from ";
         strcat(connection, inet_ntoa(newAddr.sin_addr));
         strcat(connection, ":");
-        sprintf(&connection[strlen(connection)],"%d\n",ntohs(newAddr.sin_port));
+        sprintf(&connection[strlen(connection)], "%d\n", ntohs(newAddr.sin_port));
         printf("%s", connection);
 
-
-        memcpy(forLog.ans, connection, strlen(connection));
+        memcpy(forLog.log, connection, strlen(connection));
         write(fd, &forLog, sizeof(struct Logs));
-	    bzero(forLog.ans, sizeof(forLog.ans));
-
+        bzero(forLog.log, sizeof(forLog.log));
 
         if ((childpid = fork()) == 0)
         {
@@ -104,35 +106,37 @@ int main()
             {
                 recv(newSocket, buffer, 1024, 0);
                 if (strcmp(buffer, ":exit") == 0)
-                {   
-                    char disconnect [64] = "Disconnected from ";
+                {
+                    char disconnect[64] = "Disconnected from ";
                     strcat(disconnect, inet_ntoa(newAddr.sin_addr));
                     strcat(disconnect, ":");
-                    sprintf(&disconnect[strlen(disconnect)],"%d\n",ntohs(newAddr.sin_port));
-                    printf("%s", disconnect);                 
-                    memcpy(forLog.ans, disconnect, strlen(disconnect));
+                    sprintf(&disconnect[strlen(disconnect)], "%d\n", ntohs(newAddr.sin_port));
+                    printf("%s", disconnect);
+                    memcpy(forLog.log, disconnect, strlen(disconnect));
                     write(fd, &forLog, sizeof(struct Logs));
-                    bzero(forLog.ans, sizeof(forLog.ans));
+                    bzero(forLog.log, sizeof(forLog.log));
                     break;
+                }
+                else if (strcmp(buffer, ">choice") == 0)
+                {
+                    printf("client switch servers");
                 }
                 else
                 {
                     char cursor[20];
-                    char keyboardlayout[5];
+                    char keyboardlayout[2];
                     KeyboardLayout(keyboardlayout);
+                    printf("%s\n", keyboardlayout);
                     Cursor(cursor);
-                    char ans[20] = {0};
-                    strcat(ans, cursor);
-                    strcat(ans, "___");
-                    strcat(ans, keyboardlayout);
+                    memcpy(forLog.ans1, cursor, strlen(cursor));
+                    memcpy(forLog.ans2, keyboardlayout, strlen(keyboardlayout));
+                    printf("%s\n", forLog.ans2);
                     sleep(1);
                     printf("Client: %s\n", buffer);
-                    send(newSocket, ans, strlen(ans), 0);
-                    printf("%s\n", ans);
-                    memcpy(forLog.ans, ans, strlen(ans));
+                    send(newSocket, &forLog, sizeof(struct Logs), 0);
                     write(fd, &forLog, sizeof(struct Logs));
-                    bzero(forLog.ans, sizeof(forLog.ans));
-                    bzero(ans, sizeof(ans));
+                    bzero(forLog.ans1, sizeof(forLog.ans1));
+                    bzero(forLog.ans2, sizeof(forLog.ans2));
                 }
                 bzero(buffer, sizeof(buffer));
             }
@@ -159,7 +163,8 @@ void Cursor(char *s)
     system("rm a.txt");
     char newstring[20];
     int i;
-    for (i = 0; (newstring[i] = string[i]) != 's'; i++);
+    for (i = 0; (newstring[i] = string[i]) != 's'; i++)
+        ;
     newstring[i] = '\0';
     newstring[i - 1] = '\0';
     strcpy(s, newstring);
