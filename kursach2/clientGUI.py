@@ -40,29 +40,6 @@ def CloseAll():
     SS1.close()
     SS2.close()
     sys.exit('Client is close')
-# choice  = int(input("What server do u wanna see? 1, 2 or both(3)?\t"))
-# flag = True
-# while flag:
-#     match choice:
-#         case 1:
-#             SendData = input("What quest do you wanna see? 1, 2, or both(3)?\t")
-#             server1(SendData)
-#             time.sleep(5)
-#             choice = int(input("What server do u wanna see? 1, 2 or both(3)?\t"))
-#         case 2: 
-#             SendData = input("What quest do you wanna see? 1, 2, or both(3)?\t")
-#             server2(SendData)
-#             time.sleep(5)
-#             choice = int(input("What server do u wanna see? 1, 2 or both(3)?\t"))
-#         case 3:
-#             SendData = input("What quest do you wanna see? 1, 2, or both(3)?\t")
-#             server1(SendData)
-#             server2(SendData)
-#             time.sleep(5)
-#             choice = int(input("What server do u wanna see? 1, 2 or both(3)?\t"))
-#         case _:
-#             print("Bad request! Application will be closed!")
-#             flag = False    
 
 root = Tk()
 

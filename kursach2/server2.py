@@ -21,7 +21,7 @@ def take_swapon():
     output = subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()[0]
     output = output.decode()
     output = output.split()
-    while(output[0] != 'partition'):
+    while(output[0] != 'file'):
         output.pop(0)
     output.pop()
     output.pop(0)	
@@ -43,10 +43,12 @@ def multi_threaded_client(c):
         rcvdData = c.recv(1024).decode()
         print("Client: ", rcvdData)
         AlSwapon, FrSwapon = take_swapon()
+        AlSwapon = AlSwapon.replace(',','.')
+        FrSwapon = FrSwapon.replace(',','.')
         metricAll = AlSwapon[-1]
-        AlSwapon = int(AlSwapon[:-1])
+        AlSwapon = float(AlSwapon[:-1])
         metricFr = FrSwapon[-1]
-        FrSwapon = int(FrSwapon[:-1])
+        FrSwapon = float(FrSwapon[:-1])
         match rcvdData:
             case '1':
                 AlSwapon = fromToByte(AlSwapon, metricAll)
