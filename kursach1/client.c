@@ -7,14 +7,14 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#define PORT1 4444
-#define PORT2 5555
+#define PORT1 4444 // порт для первого сервака
+#define PORT2 5555 // порт для второго сервака
 
-int server1(int clientSocket1, int clientSocket2, char *buffer);
+int server1(int clientSocket1, int clientSocket2, char *buffer); //инициализация функций
 int server2(int clientSocket1, int clientSocket2, char *buffer);
 int bothServers(int clientSocket1, int clientSocket2, char *buffer);
 
-struct answers
+struct answers // создание структуры, которая будет принимать ответы от серверов
 {
 	char ans1[32];
 	char ans2[512];
@@ -22,13 +22,13 @@ struct answers
 	char client[1024];
 	int server;
 };
-struct answers answers;
+struct answers answers; // инициализация структуры
 
 int main()
 {
 
-	int clientSocket1, clientSocket2, ret1, ret2; // Настройка клиента
-	clientSocket1 = socket(AF_INET, SOCK_STREAM, 0);
+	int clientSocket1, clientSocket2, ret1, ret2; // создание переменных необходимых для клиента
+	clientSocket1 = socket(AF_INET, SOCK_STREAM, 0); //настройка клиента для первого сервера
 	if (clientSocket1 < 0)
 	{
 		printf("[-]Error in connection.\n");
@@ -36,7 +36,7 @@ int main()
 	}
 	printf("[+]Client Socket for server1 is created.\n");
 
-	clientSocket2 = socket(AF_INET, SOCK_STREAM, 0);
+	clientSocket2 = socket(AF_INET, SOCK_STREAM, 0); //настройка клиента для второго сервера
 	if (clientSocket2 < 0)
 	{
 		printf("[-]Error in connection.\n");
@@ -87,28 +87,31 @@ int main()
 	scanf("%d", &choice);
 
 	// начинается магия
+	// пока выбор [1,3]
 	while (choice > 0 && choice < 4)
 	{
-		int flag = 1;
+		int flag = 1;//каждую итерацию создается флаг, чтобы работа с сервером не была бесконечной
 		switch (choice)
 		{
 		case 1:
-			while (flag == 1)
+			while (flag == 1) //пока флаг 1, работаешь с первым сервером
 				flag = server1(clientSocket1, clientSocket2, buffer); // Работа ТОЛЬКО с первым сервером
 			break;
 		case 2:
-			while (flag == 1)
+			while (flag == 1) //пока флаг 1, работаешь со вторым сервером
 				flag = server2(clientSocket1, clientSocket2, buffer); // Работа ТОЛЬКО со вторым сервером
 			break;
 		case 3:
-			while (flag == 1)
+			while (flag == 1) //пока флаг 1, работаешь с обоими серверами
 				flag = bothServers(clientSocket1, clientSocket2, buffer); // работа с двумя серверами
 			break;
 		default:
+			// если пользователь не прочитал, то ему советуют сделать это еще раз.
 			printf("What server do you want to connect to?\n1 - first, 2 - second, 3 - both.\nFor exit - choice server and print ':exit'.\nFor rechoice server - choice server and print '>choice':");
 			scanf("%d", &choice);
 			break;
 		}
+		// если юзер ввел >choice, то выводится как работать в клиенте
 		printf("What server do you want to connect to?\n1 - first, 2 - second, 3 - both.\nFor exit - choice server and print ':exit'.\nFor rechoice server - choice server and print '>choice':");
 		scanf("%d", &choice);
 	}
@@ -135,8 +138,6 @@ int server1(int clientSocket1, int clientSocket2, char *buffer)
 	}
 
 	recv(clientSocket1, &answers, sizeof(struct answers), 0); // в нее записываются данные от сервера
-	// обрезка полученной инфы от сервера
-	// обрезка полученной инфы от сервера
 	if (answers.ans1 < 0)
 	{
 		printf("[-]Error in receiving data.\n"); // контроль ошибки сервера
@@ -145,15 +146,15 @@ int server1(int clientSocket1, int clientSocket2, char *buffer)
 	{
 		if (strcmp(buffer, "1") == 0)
 		{
-			printf("Server1: \t%s\n", answers.ans1); // вывод сервера
+			printf("Server1: \t%s\n", answers.ans1); // вывод сервера для первого задания
 		}
 		else if (strcmp(buffer, "2") == 0)
 		{
-			printf("Server1: \t%s\n", answers.ans2); // вывод сервера
+			printf("Server1: \t%s\n", answers.ans2); // вывод сервера для второго задания
 		}
 		else
 		{
-			printf("Server1: \t%s\n", answers.ans1);
+			printf("Server1: \t%s\n", answers.ans1); // вывод сервера для двух заданий
 			printf("Server1: \t%s\n", answers.ans2);
 		}
 	}
@@ -191,19 +192,19 @@ int server2(int clientSocket1, int clientSocket2, char *buffer)
 	{
 		if (strcmp(buffer, "1") == 0)
 		{
-			printf("Server2: \t%s\n", answers.ans1); // вывод сервера
+			printf("Server2: \t%s\n", answers.ans1); // вывод сервера для первого задания
 		}
 		else if (strcmp(buffer, "2") == 0)
 		{
-			printf("Server2: \t%s\n", answers.ans2); // вывод сервера
+			printf("Server2: \t%s\n", answers.ans2); // вывод сервера для второго задания
 		}
 		else
 		{
-			printf("Server2: \t%s\n", answers.ans1);
+			printf("Server2: \t%s\n", answers.ans1); // вывод сервера для двух заданий
 			printf("Server2: \t%s\n", answers.ans2);
 		}
 	}
-	bzero(buffer, sizeof(buffer)); // очистка буффера.
+	bzero(buffer, sizeof(buffer)); // очистка буффера, чтобы не было коллизий.
 	return 1;
 }
 

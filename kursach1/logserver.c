@@ -8,10 +8,10 @@
 
 int main()
 {
-    system("rm myfifo");
-    FILE *file1;
+    system("rm myfifo"); // удаляется файл канала, если он был в каталоге
+    FILE *file1; // переменные для логфайлов
     FILE *file2;
-    if ((file1 = fopen("LogFile1.txt", "a")) == NULL)
+    if ((file1 = fopen("LogFile1.txt", "a")) == NULL)//попытка открыть файлы и их контроль ошибок
     {
         printf("smth went wrong");
         return 0;
@@ -21,7 +21,7 @@ int main()
         printf("smth went wrong");
         return 0;
     }
-    int lines_count1 = 0;
+    int lines_count1 = 0;//подсчёт количества строк в первом и во втором (почему-то не работает)
     for (char c = getc(file1); c != EOF; c = getc(file1))
     {
         if (c == '\n')
@@ -39,17 +39,17 @@ int main()
         }
     }
 
-    umask(0);
-    int ret = mkfifo("myfifo", 0666);
+    umask(0); // начало работы с каналами
+    int ret = mkfifo("myfifo", 0666); // создание файла фифо
     if (ret < 0)
     {
-        perror("mkfifo");
+        perror("mkfifo"); // контроль ошибки при создании файла
         return 1;
     }
 
-    int fd = open("myfifo", O_RDONLY);
+    int fd = open("myfifo", O_RDONLY); // открывается только для чтения
 
-    struct Logs
+    struct Logs // создается структура, принимающая логи
     {
         char ans1[32];
         char ans2[512];
@@ -57,41 +57,100 @@ int main()
         char client[1024];
         int server;
     };
-    struct Logs forLog;
-    while (1)
+    struct Logs forLog;// инициализируется
+    while (1) //вечно
     {
-        int len = read(fd, &forLog, sizeof(struct Logs));
-        if (forLog.server == 1)
+        int len = read(fd, &forLog, sizeof(struct Logs));//читается структура из файла фифо
+        if (forLog.server == 1)// если одна из переменных в структуре равна 1, то
         {
-            if (strlen(forLog.ans1) == 0)
-            {
-                printf("Log1 %s\n", forLog.log);
-                fprintf(file1, "Log #%d: %s", lines_count1, forLog.log);
-                lines_count1++;
+            if (strlen(forLog.ans1) == 0) // если длина ответа = 0, то
+            { // значит что-то в логах. 
+                if(strcmp(forLog.log, "Connection")==0){
+                    printf("Log1 %s\n", forLog.log); // просматриваем их и
+                    fprintf(file1, "Log #%d: %s", lines_count1, forLog.log); // записываем в файл
+                    lines_count1++; // увеличиваем счётчик количества строк.
+                }
+                else if(strcmp(forLog.log, "Disconnected")==0){
+                    printf("Log1 %s\n", forLog.log); // просматриваем их и
+                    fprintf(file1, "Log #%d: %s", lines_count1, forLog.log); // записываем в файл
+                    lines_count1++; // увеличиваем счётчик количества строк.
+                }
             }
-            printf("Log1 %s\n", forLog.ans1);
-            printf("Log1 %s\n", forLog.ans2);
-            fprintf(file1, "Log #%d: %s\n", lines_count1, forLog.ans1);
-            lines_count1++;
-            fprintf(file1, "Log #%d: %s\n", lines_count1, forLog.ans2);
-            lines_count1++;
-        }
-        if (forLog.server == 2)
-        {
-            if (strlen(forLog.ans1) == 0)
-            {
-                printf("Log2 %s\n", forLog.log);
-                fprintf(file2, "Log #%d: %s", lines_count2, forLog.log);
-                lines_count2++;
+            else{
+                if(strcmp(forLog.client, "1")==0){
+                    printf("ClientLog %s\n", forLog.client);
+                    fprintf(file1, "ClientLog #%d: %s\n", lines_count1, forLog.client);
+                    lines_count1++;
+                    printf("Log1 %s\n", forLog.ans1);// все тоже самое, но с ответами
+                    fprintf(file1, "Log #%d: %s\n", lines_count1, forLog.ans1);
+                    lines_count1++;
+                }
+                else if(strcmp(forLog.client, "2")==0){
+                    printf("ClientLog %s\n", forLog.client);
+                    fprintf(file1, "ClientLog #%d: %s\n", lines_count1, forLog.client);
+                    lines_count1++;
+                    printf("Log1 %s\n", forLog.ans2);// все тоже самое, но с ответами
+                    fprintf(file1, "Log #%d: %s\n", lines_count1, forLog.ans2);
+                    lines_count1++;
+                }
+                else{
+                    printf("ClientLog %s\n", forLog.client);
+                    fprintf(file1, "ClientLog #%d: %s\n", lines_count1, forLog.client);
+                    lines_count1++;
+                    printf("Log1 %s\n", forLog.ans1);// все тоже самое, но с ответами
+                    printf("Log1 %s\n", forLog.ans2);
+                    fprintf(file1, "Log #%d: %s\n", lines_count1, forLog.ans1);
+                    lines_count1++;
+                    fprintf(file1, "Log #%d: %s\n", lines_count1, forLog.ans2);
+                    lines_count1++;
+                }
             }
-            printf("Log2 %s\n", forLog.ans1);
-            printf("Log2 %s\n", forLog.ans2);
-            fprintf(file2, "Log #%d: %s\n", lines_count2, forLog.ans1);
-            lines_count2++;
-            fprintf(file2, "Log #%d: %s\n", lines_count2, forLog.ans2);
-            lines_count2++;
         }
-
+        if (forLog.server == 2) // если одна из переменных в структуре равна 2, то
+       {
+            if (strlen(forLog.ans1) == 0) // если длина ответа = 0, то
+            { // значит что-то в логах. 
+                if(strcmp(forLog.log, "Connection")==0){
+                    printf("Log2 %s\n", forLog.log); // просматриваем их и
+                    fprintf(file1, "Log #%d: %s", lines_count2, forLog.log); // записываем в файл
+                    lines_count2++; // увеличиваем счётчик количества строк.
+                }
+                else if(strcmp(forLog.log, "Disconnected")==0){
+                    printf("Log2 %s\n", forLog.log); // просматриваем их и
+                    fprintf(file2, "Log #%d: %s", lines_count2, forLog.log); // записываем в файл
+                    lines_count2++; // увеличиваем счётчик количества строк.
+                }
+            }
+            else{
+                if(strcmp(forLog.client, "1")==0){
+                    printf("ClientLog %s\n", forLog.client);
+                    fprintf(file2, "ClientLog #%d: %s\n", lines_count2, forLog.client);
+                    lines_count2++;
+                    printf("Log2 %s\n", forLog.ans1);// все тоже самое, но с ответами
+                    fprintf(file2, "Log #%d: %s\n", lines_count2, forLog.ans1);
+                    lines_count2++;
+                }
+                else if(strcmp(forLog.client, "2")==0){
+                    printf("ClientLog %s\n", forLog.client);
+                    fprintf(file2, "ClientLog #%d: %s\n", lines_count2, forLog.client);
+                    printf("Log2 %s\n", forLog.ans2);// все тоже самое, но с ответами
+                    fprintf(file2, "Log #%d: %s\n", lines_count2, forLog.ans2);
+                    lines_count2++;
+                }
+                else{
+                    printf("ClientLog %s\n", forLog.client);
+                    fprintf(file2, "ClientLog #%d: %s\n", lines_count2, forLog.client);
+                    lines_count2++;
+                    printf("Log2 %s\n", forLog.ans1);// все тоже самое, но с ответами
+                    printf("Log2 %s\n", forLog.ans2);
+                    fprintf(file2, "Log #%d: %s\n", lines_count2, forLog.ans1);
+                    lines_count2++;
+                    fprintf(file2, "Log #%d: %s\n", lines_count2, forLog.ans2);
+                    lines_count2++;
+                }
+            }
+        }
+        // контроли ошибок и выход из фифо
         if (len > 0)
         {
         }
@@ -106,6 +165,7 @@ int main()
             return 1;
         }
     }
+    // закрываются файлы и фифо
     fclose(file1);
     fclose(file2);
     close(fd);
