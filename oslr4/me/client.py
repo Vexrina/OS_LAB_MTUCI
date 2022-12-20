@@ -1,5 +1,4 @@
 import socket
-import socket
 from gaussWithoutArg import InverseOfMtx, ParseArguments
 from generateMtx import MtxToStr
 import time

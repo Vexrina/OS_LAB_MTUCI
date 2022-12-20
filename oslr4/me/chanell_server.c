@@ -19,11 +19,11 @@ int main(){
     {
         int len = read(fd,buf,sizeof(buf)-1);
         if(len>0){
-		char command[] = "python3 ./gauss.py ";
-        	buf[len] = 0;
-		strcat(command, buf);
-		//printf(command);
-		system(command);
+		    char command[] = "python3 ./gauss.py ";
+            buf[len] = 0;
+		    strcat(command, buf);
+		    //printf(command);
+		    system(command);
         }
         else if (len==0){
             printf("client quit!\n");

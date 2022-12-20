@@ -1,5 +1,4 @@
-import socket
-import time
+import socket, time
 
 port1 = 4444
 port2 = 5555
